@@ -291,8 +291,23 @@ with open('data/tech_reports_rag.json', 'w', encoding='utf-8') as f:
 
 SQLダンプをお持ちの場合：
 
-1. `scripts/prepare_data.py` を使用
-2. または、SQLからJSONにエクスポートしてから上記の形式に変換
+1. `scripts/export_data.py` を使用してMySQLからエクスポート（Excel + JSON）
+2. または、手動でSQLからJSONにエクスポートしてから上記の形式に変換
+
+**MySQLからエクスポート（推奨）：**
+
+```bash
+export MYSQL_HOST=localhost
+export MYSQL_PORT=3306
+export MYSQL_USER=root
+export MYSQL_PASSWORD=your_password
+export MYSQL_DATABASE=neuron
+export EXPORT_PATH=./data/exports
+
+uv run python scripts/export_data.py
+```
+
+これで `./data/exports/tech_reports_export.json` と `.xlsx` ファイルが出力されます。
 
 ### データのポイント
 
@@ -455,6 +470,7 @@ RagNeuron/
 │   ├── rag.py          # 検索ロジック
 │   └── main.py         # APIサーバー
 ├── scripts/
+│   ├── export_data.py   # MySQL → Excel/JSONエクスポート
 │   └── prepare_data.py  # データ準備
 ├── data/               # データ配置場所
 ├── vectors/            # ベクトルデータベース
@@ -781,8 +797,23 @@ with open('data/tech_reports_rag.json', 'w', encoding='utf-8') as f:
 
 If you have SQL dumps:
 
-1. Use `scripts/prepare_data.py`
-2. Or export SQL to JSON and convert to the format above
+1. Use `scripts/export_data.py` to export from MySQL (Excel + JSON)
+2. Or manually export SQL to JSON and convert to the format above
+
+**Export from MySQL (recommended):**
+
+```bash
+export MYSQL_HOST=localhost
+export MYSQL_PORT=3306
+export MYSQL_USER=root
+export MYSQL_PASSWORD=your_password
+export MYSQL_DATABASE=neuron
+export EXPORT_PATH=./data/exports
+
+uv run python scripts/export_data.py
+```
+
+This outputs `./data/exports/tech_reports_export.json` and `.xlsx` files.
 
 ### Data Tips
 
@@ -944,6 +975,7 @@ RagNeuron/
 │   ├── rag.py          # Search logic
 │   └── main.py         # API server
 ├── scripts/
+│   ├── export_data.py   # MySQL → Excel/JSON export
 │   └── prepare_data.py  # Data preparation
 ├── data/               # Your data goes here
 ├── vectors/            # Vector database
