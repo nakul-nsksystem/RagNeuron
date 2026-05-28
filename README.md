@@ -5,19 +5,11 @@
 <a name="日本語"></a>
 # RagNeuron
 
-過去の技術支援レポートから回答を検索するRAG（Retrieval Augmented Generation）システムです。自然言語で質問すると、過去の修理事例から最適な回答が得られます。
 
-**ML/AIの知識は不要です！** このガイドでは、すべての手順を詳しく説明します。
 
 ---
 
-## これは何ですか？
-
-過去の修理記録データベース（日本語など）を持っていても、手動で探すのは大変ですよね。代わりに这样的な質問ができると便利です：
-
-- "カット機が応答しない、サーボエラーが表示される"
-- "レーザーヘッドが動作しない"
-- "X軸が動かない"
+#
 
 RagNeuronは最も類似した過去の事例を見つけ、AIが親切な回答を生成します。
 
@@ -511,9 +503,6 @@ GitHubでIssueを作成してください。
 <a name="english"></a>
 # RagNeuron
 
-A RAG (Retrieval Augmented Generation) system for searching technical support reports. Ask questions in plain language and get answers from past repair cases.
-
-**No ML/AI background needed!** This guide walks you through every step.
 
 ---
 
