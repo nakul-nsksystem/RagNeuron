@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environment
+.venv/
+.venv
+
+# Environment
+.env
+
+# Data - keep structure but not actual data
+data/*
+!data/.gitkeep
+
+# Vectors - keep structure but not actual vectors
+vectors/*
+!vectors/.gitkeep
+
+# OS
+.DS_Store
+*.swp
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
