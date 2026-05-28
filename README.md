@@ -51,6 +51,9 @@ brew install --cask docker
 **Linux（Ubuntu）：**
 ```bash
 sudo apt update
+# Option A: Docker Compose plugin (recommended)
+sudo apt install docker.io docker-compose-plugin
+# Option B: Legacy standalone docker-compose
 sudo apt install docker.io docker-compose
 sudo systemctl start docker
 ```
@@ -122,12 +125,24 @@ uv sync
 すべてインストールした後、実行：
 
 ```bash
-# Linux/macOS
+# Linux/macOS（Docker Composeプラグイン）
 ./run.sh
 
-# Windows
+# Linux/macOS（レガシーdocker-compose）
+./run-legacy.sh
+
+# Windows（Docker Composeプラグイン）
 run.bat
+
+# Windows（レガシーdocker-compose）
+run-legacy.bat
 ```
+
+**どちらのスクリプトを使うべき？**
+- `run.sh` / `run.bat` → `docker compose`（サブコマンド、Compose v2+）
+- `run-legacy.sh` / `run-legacy.bat` → `docker-compose`（スタンドアロンバイナリ）
+
+`docker compose` が使えない場合は `run-legacy` を使用してください。
 
 スクリプトが自動的に行うこと：
 1. GPUがあるか検出
@@ -141,7 +156,10 @@ run.bat
 ### Qdrantを起動（ベクトルデータベース）
 
 ```bash
+# Docker Composeプラグインの場合
 docker compose up -d qdrant
+# レガシーdocker-composeの場合
+docker-compose up -d qdrant
 ```
 
 起動まで3秒待ちます。
@@ -329,8 +347,10 @@ curl -X POST http://localhost:8769/rag/query \
 NVIDIA GPUがある場合に最適。
 
 ```bash
-./run.sh 1   # Linux/macOS
-run.bat 1     # Windows
+./run.sh 1         # Linux/macOS（プラグイン）
+./run-legacy.sh 1  # Linux/macOS（レガシー）
+run.bat 1          # Windows（プラグイン）
+run-legacy.bat 1   # Windows（レガシー）
 ```
 
 ### モード2：フルDocker（デプロイメント向け）
@@ -338,8 +358,10 @@ run.bat 1     # Windows
 すべてDockerコンテナで実行。
 
 ```bash
-./run.sh 2   # Linux/macOS
-run.bat 2     # Windows
+./run.sh 2         # Linux/macOS（プラグイン）
+./run-legacy.sh 2  # Linux/macOS（レガシー）
+run.bat 2          # Windows（プラグイン）
+run-legacy.bat 2   # Windows（レガシー）
 ```
 
 ---
@@ -438,8 +460,10 @@ RagNeuron/
 ├── vectors/            # ベクトルデータベース
 ├── docker-compose.yml  # Dockerサービス
 ├── Dockerfile         # Dockerイメージ
-├── run.sh             # Linux/macOSランチャー
-├── run.bat            # Windowsランチャー
+├── run.sh             # Linux/macOSランチャー（Docker Compose）
+├── run.bat            # Windowsランチャー（Docker Compose）
+├── run-legacy.sh      # Linux/macOSランチャー（レガシーdocker-compose）
+├── run-legacy.bat     # Windowsランチャー（レガシーdocker-compose）
 └── pyproject.toml     # Pythonパッケージ
 ```
 
@@ -517,6 +541,9 @@ brew install --cask docker
 **Linux (Ubuntu):**
 ```bash
 sudo apt update
+# Option A: Docker Compose plugin (recommended)
+sudo apt install docker.io docker-compose-plugin
+# Option B: Legacy standalone docker-compose
 sudo apt install docker.io docker-compose
 sudo systemctl start docker
 ```
@@ -588,12 +615,24 @@ This automatically creates a virtual environment and installs all packages.
 After installing everything, run:
 
 ```bash
-# Linux/macOS
+# Linux/macOS (Docker Compose plugin)
 ./run.sh
 
-# Windows
+# Linux/macOS (legacy docker-compose)
+./run-legacy.sh
+
+# Windows (Docker Compose plugin)
 run.bat
+
+# Windows (legacy docker-compose)
+run-legacy.bat
 ```
+
+**Which script to use?**
+- `run.sh` / `run.bat` → `docker compose` (subcommand, Compose v2+)
+- `run-legacy.sh` / `run-legacy.bat` → `docker-compose` (standalone binary)
+
+Use the `-legacy` variant if you get `unknown shorthand flag: 'd'` or `'compose' is not a docker command` errors.
 
 The script will:
 1. Detect if you have a GPU
@@ -607,7 +646,10 @@ The script will:
 ### Start Qdrant (Vector Database)
 
 ```bash
+# Docker Compose plugin
 docker compose up -d qdrant
+# Legacy docker-compose
+docker-compose up -d qdrant
 ```
 
 Wait 3 seconds for it to start.
@@ -794,8 +836,10 @@ In Japanese:
 Best if you have an NVIDIA GPU.
 
 ```bash
-./run.sh 1   # Linux/macOS
-run.bat 1     # Windows
+./run.sh 1         # Linux/macOS (plugin)
+./run-legacy.sh 1  # Linux/macOS (legacy)
+run.bat 1          # Windows (plugin)
+run-legacy.bat 1   # Windows (legacy)
 ```
 
 ### Mode 2: Full Docker (Recommended for deployment)
@@ -803,8 +847,10 @@ run.bat 1     # Windows
 Everything runs in Docker containers.
 
 ```bash
-./run.sh 2   # Linux/macOS
-run.bat 2     # Windows
+./run.sh 2         # Linux/macOS (plugin)
+./run-legacy.sh 2  # Linux/macOS (legacy)
+run.bat 2          # Windows (plugin)
+run-legacy.bat 2   # Windows (legacy)
 ```
 
 ---
@@ -903,8 +949,10 @@ RagNeuron/
 ├── vectors/            # Vector database
 ├── docker-compose.yml  # Docker services
 ├── Dockerfile         # Docker image
-├── run.sh             # Linux/macOS launcher
-├── run.bat            # Windows launcher
+├── run.sh             # Linux/macOS launcher (Docker Compose plugin)
+├── run.bat            # Windows launcher (Docker Compose plugin)
+├── run-legacy.sh      # Linux/macOS launcher (legacy docker-compose)
+├── run-legacy.bat     # Windows launcher (legacy docker-compose)
 └── pyproject.toml     # Python packages
 ```
 
