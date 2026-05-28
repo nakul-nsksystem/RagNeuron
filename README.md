@@ -487,16 +487,6 @@ RagNeuron/
 
 ---
 
-## ライセンス
-
-MIT - 自由に使用・改変・配布可能。
-
----
-
-## サポート
-
-GitHubでIssueを作成してください。
-
 ---
 ---
 
@@ -989,12 +979,3 @@ RagNeuron/
 
 ---
 
-## License
-
-MIT - Do whatever you want with it.
-
----
-
-## Support
-
-Open an issue on GitHub if you need help.
