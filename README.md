@@ -1,64 +1,191 @@
 # RagNeuron
 
-RAG (Retrieval Augmented Generation) system for technical support reports. Supports Japanese language.
+A RAG (Retrieval Augmented Generation) system for searching technical support reports. Ask questions in plain language and get answers from past repair cases.
 
-## Features
+**No ML/AI background needed!** This guide walks you through every step.
 
-- Semantic search over technical support records
-- LLM-powered answers from local LM Studio
-- Auto-selects embedding model based on hardware:
-  - **GPU**: BAAI/bge-m3 (1024 dims, best quality)
-  - **CPU**: intfloat/multilingual-e5-small (384 dims, fast, Japanese optimized)
-- Docker support for Qdrant vector database
+---
 
-## Requirements
+## What Does This Do?
 
-- Python 3.10+
-- Docker (for Qdrant)
-- LM Studio (for LLM)
-- NVIDIA GPU (optional, for faster embeddings)
+You have a database of past repair records (in any language, like Japanese). Instead of manually searching through them, you can ask questions like:
 
-## Quick Start
+- "My cutting machine shows servo error, what should I do?"
+- "The laser head is not responding"
+- "X軸が動かない" (X-axis not moving)
 
-### 1. Clone and Install
+RagNeuron finds the most similar past cases and uses AI to give you a helpful answer.
+
+---
+
+## Prerequisites
+
+Before starting, you need 3 things:
+
+### 1. Python (already on most computers)
+
+Check if you have it:
+```bash
+python --version
+```
+
+If not, download from [python.org](https://www.python.org/downloads/)
+
+### 2. Docker (for the vector database)
+
+**Windows:**
+1. Download Docker Desktop from [docker.com](https://www.docker.com/get-started/)
+2. Install it
+3. Start Docker Desktop
+
+**macOS:**
+```bash
+brew install --cask docker
+```
+
+**Linux (Ubuntu):**
+```bash
+sudo apt update
+sudo apt install docker.io docker-compose
+sudo systemctl start docker
+```
+
+Verify Docker is running:
+```bash
+docker --version
+```
+
+### 3. LM Studio (for AI answers)
+
+Download from [lmstudio.ai](https://lmstudio.ai/)
+
+1. Download and install LM Studio
+2. Open LM Studio
+3. Download a model (recommended: Qwen3.5-2B or similar)
+4. Click "Start Server" (usually at port 1234)
+
+---
+
+## Installation
+
+### Step 1: Get the Code
+
+**Option A: Download ZIP**
+1. Go to the GitHub repo
+2. Click the green "Code" button
+3. Click "Download ZIP"
+4. Extract to a folder
+
+**Option B: Using Git**
+```bash
+git clone https://github.com/nakul-nsksystem/RagNeuron.git
+cd RagNeuron
+```
+
+### Step 2: Install uv
+
+uv is a fast Python package manager.
+
+**macOS / Linux:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Windows:**
+```bash
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Or use pip:
+```bash
+pip install uv
+```
+
+### Step 3: Install Python Dependencies
 
 ```bash
 cd RagNeuron
 uv sync
 ```
 
-### 2. Configure
+This automatically creates a virtual environment and installs all packages.
+
+---
+
+## Quick Start (One Command)
+
+After installing everything, run:
 
 ```bash
-cp .env.example .env
-# Edit .env with your settings
+# Linux/macOS
+./run.sh
+
+# Windows
+run.bat
 ```
 
-Default `.env`:
+The script will:
+1. Detect if you have a GPU
+2. Ask which mode you want
+3. Start everything for you
+
+---
+
+## Manual Setup (If You Prefer)
+
+### Start Qdrant (Vector Database)
+
 ```bash
-LLM_BASE_URL=http://localhost:1234/v1
-LLM_MODEL=qwen3.5-2b
-EMBEDDING_DEVICE=cuda   # cuda for GPU, cpu for CPU-only
-QDRANT_URL=http://localhost:6333
+docker compose up -d qdrant
 ```
 
-### 3. Launch
+Wait 3 seconds for it to start.
 
-**Linux/macOS:**
+### Add Your Data
+
+Place your JSON data file as `data/tech_reports_rag.json`
+
+Format should be:
+```json
+[
+  {
+    "text": "Problem description",
+    "metadata": {
+      "report_id": 1,
+      "work_symptom": "Problem",
+      "work_detail": "Solution",
+      "device": "Device name",
+      "error_code": "ERROR123"
+    }
+  }
+]
+```
+
+### Ingest Your Data
+
 ```bash
-./run.sh        # Interactive mode (auto-detects GPU)
-./run.sh 1      # Local ingestion + Docker Qdrant + Local API
-./run.sh 2      # Full Docker stack
+uv run python -m src.ingest
 ```
 
-**Windows:**
-```batch
-run.bat         # Interactive mode
-run.bat 1       # Local ingestion + Docker Qdrant + Local API
-run.bat 2       # Full Docker stack
+This takes 1-10 minutes depending on data size and your hardware.
+
+### Start the API
+
+```bash
+uv run uvicorn src.main:app --host 0.0.0.0 --port 8769
 ```
 
-### 4. Use
+### Open in Browser
+
+- API: http://localhost:8769
+- Docs (try queries here): http://localhost:8769/docs
+- Qdrant Dashboard: http://localhost:6333
+
+---
+
+## Usage Examples
+
+### Test with Curl
 
 ```bash
 curl -X POST http://localhost:8769/rag/query \
@@ -66,55 +193,171 @@ curl -X POST http://localhost:8769/rag/query \
   -d '{"query": "カット機 動かない", "top_k": 5}'
 ```
 
+### Using the Docs Interface
+
+1. Open http://localhost:8769/docs in your browser
+2. Click on `/POST /rag/query`
+3. Click "Try it out"
+4. Enter your question and top_k value
+5. Click "Execute"
+
+### Example Questions
+
+In English:
+- "Cutting machine not responding"
+- "Laser head error"
+- "Servo motor failure"
+
+In Japanese:
+- "カット機が動かない"
+- "激光头不工作"
+- "X軸エラー"
+
+---
+
 ## Deployment Modes
 
-| Mode | Ingestion | API | Best For |
-|------|----------|-----|---------|
-| 1 - Hybrid | Local GPU/CPU | Local | Development, GPU users |
-| 2 - Docker | Docker (CPU) | Docker | CPU-only, deployment |
+### Mode 1: Hybrid (Recommended for development)
+
+- **Ingestion**: Runs on your computer (GPU if available)
+- **Database**: Qdrant in Docker
+- **API**: Runs locally
+
+Best if you have an NVIDIA GPU.
+
+```bash
+./run.sh 1   # Linux/macOS
+run.bat 1     # Windows
+```
+
+### Mode 2: Full Docker (Recommended for deployment)
+
+Everything runs in Docker containers.
+
+```bash
+./run.sh 2   # Linux/macOS
+run.bat 2     # Windows
+```
+
+---
+
+## Configuration
+
+Copy the example file and edit:
+
+```bash
+cp .env.example .env
+```
+
+Settings:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `LLM_BASE_URL` | LM Studio address | http://localhost:1234/v1 |
+| `LLM_MODEL` | Model name in LM Studio | qwen3.5-2b |
+| `EMBEDDING_DEVICE` | "cuda" for GPU, "cpu" for CPU | cuda |
+| `QDRANT_URL` | Qdrant address | http://localhost:6333 |
+| `API_PORT` | API port | 8769 |
+
+---
+
+## Embedding Models
+
+The system automatically selects the best model for your hardware:
+
+| Hardware | Model | Dimensions | Speed |
+|----------|-------|------------|-------|
+| NVIDIA GPU | BAAI/bge-m3 | 1024 | Fast |
+| CPU only | intfloat/multilingual-e5-small | 384 | Faster |
+
+If you have a GPU, it uses BGE-M3 for better quality. If not, it switches to a smaller, faster model that still handles Japanese well.
+
+---
+
+## Troubleshooting
+
+### "docker: command not found"
+
+Docker is not installed. Follow the [Prerequisites](#prerequisites) section above.
+
+### "LM Studio connection error"
+
+1. Make sure LM Studio is running
+2. Click "Start Server" in LM Studio
+3. Check that the URL in `.env` matches (default: http://localhost:1234)
+
+### "No relevant information found"
+
+- Try different keywords
+- Make sure you've run ingestion (`uv run python -m src.ingest`)
+- Check that your data is in `data/tech_reports_rag.json`
+
+### Qdrant errors
+
+Reset the vector database:
+```bash
+rm -rf vectors/qdrant-data
+uv run python -m src.ingest
+```
+
+### Out of memory
+
+If running on CPU and memory is low:
+1. Reduce batch size in `src/ingest.py`
+2. Or add more RAM
+
+---
 
 ## API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/rag/query` | POST | Query RAG system with LLM |
-| `/rag/search` | POST | Pure vector search (no LLM) |
-| `/rag/ingest` | POST | Re-ingest all data |
-| `/health` | GET | Health check |
+| `/rag/query` | POST | Ask a question (uses AI) |
+| `/rag/search` | POST | Search only (no AI) |
+| `/rag/ingest` | POST | Re-ingest your data |
+| `/health` | GET | Check if running |
+| `/` | GET | API info |
 
-## Embedding Models
-
-Automatically selected based on `EMBEDDING_DEVICE`:
-
-| Device | Model | Dims | Speed |
-|--------|-------|------|-------|
-| cuda | BAAI/bge-m3 | 1024 | Fast |
-| cpu | intfloat/multilingual-e5-small | 384 | Faster |
+---
 
 ## Project Structure
 
 ```
 RagNeuron/
 ├── src/
-│   ├── config.py      # Configuration
-│   ├── ingest.py      # Data ingestion
-│   ├── rag.py         # RAG logic
-│   └── main.py        # FastAPI app
+│   ├── config.py        # Settings
+│   ├── ingest.py        # Import data
+│   ├── rag.py          # Search logic
+│   └── main.py         # API server
 ├── scripts/
-│   └── prepare_data.py
-├── data/              # Place your data here
-├── vectors/           # Vector DB storage
-├── docker-compose.yml
-├── Dockerfile
-├── run.sh            # Linux/macOS launcher
-├── run.bat           # Windows launcher
-└── pyproject.toml
+│   └── prepare_data.py  # Data preparation
+├── data/               # Your data goes here
+├── vectors/            # Vector database
+├── docker-compose.yml  # Docker services
+├── Dockerfile         # Docker image
+├── run.sh             # Linux/macOS launcher
+├── run.bat            # Windows launcher
+└── pyproject.toml     # Python packages
 ```
+
+---
 
 ## Tech Stack
 
-- **Embeddings**: BAAI/bge-m3 (GPU) / multilingual-e5-small (CPU)
-- **Vector DB**: Qdrant
-- **LLM**: Local via LM Studio
-- **Framework**: FastAPI + LangChain
+- **Embeddings**: BAAI/bge-m3 or multilingual-e5-small
+- **Vector Database**: Qdrant
+- **LLM**: Local via LM Studio (or OpenAI)
+- **API**: FastAPI
 - **Package Manager**: uv
+
+---
+
+## License
+
+MIT - Do whatever you want with it.
+
+---
+
+## Support
+
+Open an issue on GitHub if you need help.
